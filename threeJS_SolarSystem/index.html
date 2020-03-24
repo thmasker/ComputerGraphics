@@ -1,0 +1,76 @@
+<html>
+<head>
+	<style>
+		html, body { width: 100%; height: 100%; background: #000; color: #fff; }
+		body { margin: 0; overflow: hidden; }
+		canvas { width: 100%; height: 100%; }
+	</style>
+</head>
+<body>
+<script src='js/three.min.js'></script>
+
+<script>
+	// CONSTANTS =========================================================
+	var speed = Math.PI / 180;   // 1 Degree per frame
+	var t = 1;
+	var alpha = Math.PI / 4380;
+	var beta = Math.PI / 12;
+	var theta = Math.PI / 324;
+	var de = 400;
+	var dm = de * 0.15;
+
+	// GEOMETRY, MATERIALS and MESHES ====================================
+	var geometry, material, mesh;   
+
+	// CAMERA, SCENE, RENDERER... ========================================
+	var camera, scene, renderer;
+
+	init();
+	animation();
+
+	function init(){
+		camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 1, 1000);
+		camera.position.z = 600;
+			
+		scene = new THREE.Scene();
+			
+		sun_geometry = new THREE.IcosahedronGeometry(90, 1);
+		sun_material=  new THREE.MeshBasicMaterial({color: 0xffde00 , wireframe:true});
+		sun = new THREE.Mesh(sun_geometry, sun_material);
+
+		scene.add(sun);
+
+		earth_geometry = new THREE.IcosahedronGeometry(30, 1);
+		earth_material = new THREE.MeshBasicMaterial({color: 0x0099ff, wireframe:true});
+		earth = new THREE.Mesh(earth_geometry, earth_material);
+
+		scene.add(earth);
+
+		moon_geometry = new THREE.IcosahedronGeometry(10, 1);
+		moon_material = new THREE.MeshBasicMaterial({color: 0xffffff, wireframe:true});
+		moon = new THREE.Mesh(moon_geometry, moon_material);
+
+		scene.add(moon);
+
+		renderer = new THREE.WebGLRenderer({antialias:true});
+		renderer.setSize( window.innerWidth, window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+	}  
+
+	function animation(){
+		window.requestAnimationFrame(animation);
+
+		earth.position.x = de * Math.cos(t * alpha);
+		earth.position.y = de * Math.sin(t * alpha);
+		earth.rotation.z += speed;
+
+		moon.position.x = earth.position.x + dm * Math.cos(t * theta);
+		moon.position.y = earth.position.y + dm * Math.sin(t * theta);
+
+		t += 5;
+
+		renderer.render(scene, camera);
+	}
+</script>
+</body>
+</html>
