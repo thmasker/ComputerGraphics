@@ -14,6 +14,7 @@ def usage():
     print('\t-r, --rotation=[x, y, z]. Default z')
     print('------------------------------------')
 
+
 def main(argv: List[str]):
     steps = 0
     angle = 0
