@@ -130,10 +130,10 @@ def rotate(vertex: List[float], angle: float, axis: str) -> List[float]:
     angle = toRadians(angle)
 
     if axis == 'x':
-        matrix = [[1, 0, 0], [0, math.cos(-angle), -math.sin(-angle)], [0, math.sin(-angle), math.cos(-angle)]]
+        matrix = [[1, 0, 0], [0, math.cos(angle), -math.sin(angle)], [0, math.sin(angle), math.cos(angle)]]
     elif axis == 'y':
-        matrix = [[math.cos(angle), -math.sin(angle), 0], [math.sin(angle), math.cos(angle), 0 ], [0, 0, 1]]
+        matrix = [[math.cos(angle), 0, math.sin(angle)], [0, 1, 0], [-math.sin(angle), 0, math.cos(angle)]]
     else:
-        matrix = [[math.cos(-angle), 0, math.sin(-angle)], [0, 1, 0], [-math.sin(-angle), 0, math.cos(-angle)]]
+        matrix = [[math.cos(angle), -math.sin(angle), 0], [math.sin(angle), math.cos(angle), 0 ], [0, 0, 1]]
 
     return multiply(matrix, vertex)

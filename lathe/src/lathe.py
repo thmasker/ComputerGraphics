@@ -42,9 +42,9 @@ def main(argv: List[str]):
                 print("Angle '" + arg + "' is not a valid number (int or float)")
                 sys.exit(2)
         elif opt in ('-r', '--rotation'):
-            if arg in ('x', 'X'):
+            if arg in ('x', 'X', ' x', ' X'):
                 rotation = 'x'
-            elif arg in ('y', 'Y'):
+            elif arg in ('y', 'Y', ' y', ' Y'):
                 rotation = 'y'
 
     angle_per_step = angle / steps
@@ -76,7 +76,7 @@ def main(argv: List[str]):
         faces = []
         for s in range(steps):
             for i in range(n_vertices * s, n_vertices * (s + 1)):
-                vertices.append(utils.rotate(vertices[i], angle_per_step, rotation))
+                vertices.append(utils.rotate(vertices[i], -angle_per_step, rotation))
 
             for i in range(n_ls * s, n_ls * (s + 1)):
                 ls.append([ls[i][0] + n_vertices, ls[i][1] + n_vertices])
