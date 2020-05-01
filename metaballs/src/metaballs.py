@@ -1,5 +1,5 @@
 import sys, os, json, math
-from typing import List, Tuple
+from typing import List, Tuple, Mapping
 
 from blob import Blob
 from vertex import Vertex
@@ -7,7 +7,7 @@ from face import Face
 
 
 ID = 1
-VERTICES = []
+VERTICES = {}
 
 
 def usage():
@@ -73,7 +73,7 @@ def create_grid(blobs: List[Blob], grid_size: float) -> List[List[List[Vertex]]]
         for j in range(math.ceil(Y / grid_size)):
             zs = []
             for k in range(math.ceil(Z / grid_size)):
-                zs.append(Vertex(x_min + i * grid_size, y_min + j * grid_size, z_min + k * grid_size))
+                zs.append(Vertex(x_min + i * grid_size, y_min + j * grid_size, z_min + k * grid_size, 3))
             ys.append(zs)
         grid.append(ys)
 
@@ -165,13 +165,13 @@ def get_surface_points(tetrahedron: List[Vertex], threshold: float) -> List[Vert
             vec = b - a
             vertex = ratio * vec + a
 
-            if vertex in VERTICES:
-                surface_points.append(VERTICES[VERTICES.index(vertex)])
+            if vertex.id in VERTICES:
+                surface_points.append(VERTICES[str(vertex.id)])
             else:
                 vertex.id = ID
                 ID += 1
                 surface_points.append(vertex)
-                VERTICES.append(vertex)
+                VERTICES[str(vertex.id)] = vertex
     
     return surface_points
 
@@ -210,8 +210,7 @@ def get_faces(blobs: List[Blob], tetrahedrons: List[List[Vertex]], threshold: fl
 
     return faces
 
-
-def to_obj(vertices: List[Vertex], faces: List[Face], file: str):
+def to_obj(vertices: Mapping[int, Vertex], faces: List[Face], file: str):
     """
     Creates .obj file
     """
@@ -220,7 +219,7 @@ def to_obj(vertices: List[Vertex], faces: List[Face], file: str):
     with open(new_file[0] + '.obj', 'w') as f:
         f.write('# Metaballs created with metaballs.py\n')
         f.write('# Diego Pedregal Hidalgo, 2020\n\n')
-        f.write('\n'.join([str(vertex) for vertex in vertices]))
+        f.write('\n'.join([str(vertices[key]) for key in vertices]))
         f.write('\n\n')
         f.write('\n'.join([str(face) for face in faces]))
 

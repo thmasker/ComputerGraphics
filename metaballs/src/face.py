@@ -11,8 +11,8 @@ class Face:
 
     def __eq__(self, f: 'Face') -> bool:
         if isinstance(f, Face):
-            vertices = [f.v1, f.v2, f.v3]
-            if self.normal == f.normal:
+            if self.normal() == f.normal():
+                vertices = [f.v1, f.v2, f.v3]
                 return self.v1 in vertices and self.v2 in vertices and self.v3 in vertices
             else:
                 return False
@@ -27,6 +27,3 @@ class Face:
         vec2 = self.v3 - self.v1
 
         return vec1.normal(vec2)
-
-    def list_vertices(self) -> List[Vertex]:
-        return [self.v1, self.v2, self.v3]
