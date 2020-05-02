@@ -7,7 +7,6 @@ from face import Face
 
 
 ID = 1
-VERTICES = {}
 
 
 def usage():
@@ -28,18 +27,10 @@ def parse_json(file: str) -> Tuple[float, float, List[Blob]]:
         - all defined metaballs
     """
 
-    blobs = []
-
     with open(file) as f:
         data = json.load(f)
-        
-        grid_size = data['grid_size']
-        threshold = data['threshold']
-        
-        for blob in data['blobs']:
-            blobs.append(Blob(blob['position'], blob['energy'], blob['radius']))
 
-    return grid_size, threshold, blobs
+        return data['grid_size'], data['threshold'], [Blob(blob['position'], blob['energy'], blob['radius']) for blob in data['blobs']]
 
 
 def create_grid(blobs: List[Blob], grid_size: float) -> List[List[List[Vertex]]]:
@@ -73,7 +64,7 @@ def create_grid(blobs: List[Blob], grid_size: float) -> List[List[List[Vertex]]]
         for j in range(math.ceil(Y / grid_size)):
             zs = []
             for k in range(math.ceil(Z / grid_size)):
-                zs.append(Vertex(x_min + i * grid_size, y_min + j * grid_size, z_min + k * grid_size, 3))
+                zs.append(Vertex(x_min + i * grid_size, y_min + j * grid_size, z_min + k * grid_size))
             ys.append(zs)
         grid.append(ys)
 
@@ -155,8 +146,8 @@ def get_surface_points(tetrahedron: List[Vertex], threshold: float) -> List[Vert
 
     global ID
 
-    vs_below = [vertex for vertex in tetrahedron if vertex.energy < threshold]
-    vs_beyond = [vertex for vertex in tetrahedron if vertex.energy > threshold]
+    vs_beyond = [vertex for vertex in tetrahedron if vertex.energy < threshold]
+    vs_below = [vertex for vertex in tetrahedron if vertex.energy > threshold]
 
     surface_points = []
     for a in vs_below:
@@ -165,13 +156,9 @@ def get_surface_points(tetrahedron: List[Vertex], threshold: float) -> List[Vert
             vec = b - a
             vertex = ratio * vec + a
 
-            if vertex.id in VERTICES:
-                surface_points.append(VERTICES[str(vertex.id)])
-            else:
-                vertex.id = ID
-                ID += 1
-                surface_points.append(vertex)
-                VERTICES[str(vertex.id)] = vertex
+            vertex.id = ID
+            ID += 1
+            surface_points.append(vertex)
     
     return surface_points
 
@@ -181,7 +168,7 @@ def face_orientation(blobs: List[Blob], face: Face, threshold: float) -> Face:
     Returns the well oriented face
     """
 
-    p = face.v1 + face.normal() * 2
+    p = face.v1 + face.normal()
     p.energy = calc_energy(blobs, p)
 
     if p.energy < threshold:
@@ -192,25 +179,27 @@ def face_orientation(blobs: List[Blob], face: Face, threshold: float) -> Face:
         return face
 
 
-def get_faces(blobs: List[Blob], tetrahedrons: List[List[Vertex]], threshold: float) -> List[Face]:
+def get_faces(blobs: List[Blob], tetrahedrons: List[List[Vertex]], threshold: float) -> Tuple[List[Face], List[Vertex]]:
     """
     Returns a list containing all faces defining the surface to draw
     """
 
-    faces = []
+    faces, vertices = [], []
     for tetrahedron in tetrahedrons:
-        if not all(vertex.energy > threshold for vertex in tetrahedron) and not all(vertex.energy < threshold for vertex in tetrahedron):
-            surface_points = get_surface_points(tetrahedron, threshold)
+        surface_points = get_surface_points(tetrahedron, threshold)
 
-            if surface_points:
-                faces.append(face_orientation(blobs, Face(surface_points[0], surface_points[1], surface_points[2]), threshold))
+        if surface_points:
+            faces.append(face_orientation(blobs, Face(surface_points[0], surface_points[1], surface_points[2]), threshold))
 
-                if len(surface_points) > 3:
-                    faces.append(face_orientation(blobs, Face(surface_points[1], surface_points[2], surface_points[3]), threshold))
+            if len(surface_points) > 3:
+                faces.append(face_orientation(blobs, Face(surface_points[1], surface_points[2], surface_points[3]), threshold))
 
-    return faces
+            for vertex in surface_points:
+                vertices.append(vertex)
 
-def to_obj(vertices: Mapping[int, Vertex], faces: List[Face], file: str):
+    return faces, vertices
+
+def to_obj(vertices: List[Vertex], faces: List[Face], file: str):
     """
     Creates .obj file
     """
@@ -219,7 +208,7 @@ def to_obj(vertices: Mapping[int, Vertex], faces: List[Face], file: str):
     with open(new_file[0] + '.obj', 'w') as f:
         f.write('# Metaballs created with metaballs.py\n')
         f.write('# Diego Pedregal Hidalgo, 2020\n\n')
-        f.write('\n'.join([str(vertices[key]) for key in vertices]))
+        f.write('\n'.join([str(vertex) for vertex in vertices]))
         f.write('\n\n')
         f.write('\n'.join([str(face) for face in faces]))
 
@@ -239,9 +228,9 @@ def main(args: List[str]):
         cubes = get_cubes(grid)
 
         tetrahedrons = get_tetrahedrons(cubes)
-        faces = get_faces(blobs, tetrahedrons, threshold)
+        faces, vertices = get_faces(blobs, tetrahedrons, threshold)
 
-        to_obj(VERTICES, faces, file)
+        to_obj(vertices, faces, file)
 
     print('.obj file generated')
 

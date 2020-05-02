@@ -5,17 +5,17 @@
         {
             "position": [0, 0, 0], 
             "energy": 6, 
-            "radius": 1
-        }, 
+            "radius": 2
+        },
         {
-            "position": [0.75, 0.75, 0.75], 
-            "energy": -6, 
+            "position": [-0.5, -0.5, -0.5],
+            "energy": 3,
             "radius": 1
-        }, 
+        },
         {
-            "position": [-0.5, -0.75, 0.3], 
-            "energy": -8, 
-            "radius": 1
+            "position": [0.75, 0.5, 1],
+            "energy": -2,
+            "radius": 1.5
         }
     ]
 }
